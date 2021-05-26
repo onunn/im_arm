@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="im_camera" type="getCam" name="getcam"/>
+	<node pkg="im_camera" type="subs_Box" name="subs_Box"/>
+	<node pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera_node"/>
+</launch>
