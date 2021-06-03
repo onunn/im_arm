@@ -7,7 +7,6 @@ from std_msgs.msg import UInt16MultiArray, UInt16, Empty
 
 from copy import copy
 
-
 class pubArduino:
 	def __init__(self):
 		self.Subscriber = rospy.Subscriber("test__", Empty, self.callback)
@@ -27,9 +26,7 @@ class pubArduino:
 		print("=================")
 
 	def callback(self, data):
-		self.checkState()
-
-	def checkState(self):
+		
 		if self.readyState == 0:
 			print("waiting position")
 
@@ -37,20 +34,9 @@ class pubArduino:
 			self.pub.publish(UInt16MultiArray(data=[100]))
 			print("ready ")
 			self.readyState = 2
-			'''	
-			if len(self.position) != 0:
-				armPosition = self.position.pop()
-				armPosition.append(self.direction)
-				
-				self.pub.publish(UInt16MultiArray(data=armPosition ))
-				print("=================")
-				print("arm_position : {}".format(armPosition))	
-				print("=================")
-				print("left : {}".format(self.position))
-			
-			'''
+
 		elif self.readyState == 2:	
-			if len(self.position) != 0:
+			while len(self.position) != 0:
 				armPosition = self.position.pop()
 				armPosition.append(self.direction)
 				
@@ -92,15 +78,11 @@ class getDirection:
 		self.pubArduino = pubArduino
 		self.Data = 0
 
-		
-		self.pub = rospy.Publisher("test", UInt16MultiArray, queue_size = 1)
-
 	def callback(self, data):
 		self.Data = data.data
 		self.pubArduino.direction = self.Data
-		#self.pubArduino.pritnDirection()
-
-		self.pubArduino.checkState()
+		self.pubArduino.pritnDirection()
+		
 
 
 def main(args):

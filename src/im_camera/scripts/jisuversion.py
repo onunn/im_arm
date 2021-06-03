@@ -18,16 +18,15 @@ import rospy
 from sensor_msgs.msg import CompressedImage
 
 #publish
-from std_msgs.msg import UInt16MultiArray
+from std_msgs.msg import UInt16
 
 class getCam:
 
     def __init__(self):
         self.subscriber = rospy.Subscriber("/image_raw/compressed", CompressedImage, self.callback, queue_size =1)
-        
 
     def callback(self, ros_data):
-		pub = rospy.Publisher('/box_sorted_direction', UInt16MultiArray, queue_size = 0.1)
+		pub = rospy.Publisher('/box_direction', UInt16, queue_size = 1)
 
 		np_arr = np.fromstring(ros_data.data, np.uint8)
 		image_np = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -55,7 +54,7 @@ class getCam:
  
 		rgb_box = hsv[rgbMatCenterY-rgbMatGap:rgbMatCenterY+rgbMatGap,rgbMatCenterX-rgbMatGap:rgbMatCenterX+rgbMatGap]
 		cv2.imshow('center_color', rgb_box)
-
+		
 		hsvShape = rgb_box[:,:,0].shape
 					
 		if hsvShape == (20,20):
@@ -66,7 +65,8 @@ class getCam:
 			
 			avgH = sum(hsvHChan)/ len(hsvHChan)
 			avgS = sum(hsvSChan)/ len(hsvSChan)
-			avgV = sum(hsvVChan)/ len(hsvVChan)			
+			avgV = sum(hsvVChan)/ len(hsvVChan)	
+
 			
 		else:
 			pass		
@@ -139,38 +139,26 @@ class getCam:
 		cv2.imshow('color_bitwise', img_mask)
 		cv2.imshow('cam_load', image_np2)
 
-
-
-		key = cv2.waitKey(1) & 0xFF
 		if width >= height:
 			boxDirection = 1 #horizontal
 		else:
 			boxDirection = 0 #vertical
 			
-		#print("box_Direction : ", boxDirection)	
 		
+		resultList = boxDirection
+		pubList = resultList
 
-		area = m/1000
-		if area >= 11:
-			boxSorted = 1
-		elif area >= 5 and area <= 7:
-			boxSorted = 2
-		elif area >= 2 and area <= 3:
-			boxSorted = 3
-
-		#print("box_sorted : ", boxSorted)
-		resultList = [boxSorted, boxDirection]
-		pubList = UInt16MultiArray(data=resultList)
 
 		#print("box_Sorted : %d, box_Direction : %s" % (boxSorted, boxDirection))
 		print(resultList)
 
+		key = cv2.waitKey(1) & 0xFF
 		if (key == 27): 	
 			rospy.signal_shutdown("end")
 
 		elif (key == 13):
 			pub.publish(pubList)
-		
+				
 
 
 
@@ -193,7 +181,7 @@ def sortBoxPosition(box):
 
 def main(args):
     ic = getCam()
-    rospy.init_node('getCam', anonymous=True)
+    rospy.init_node('getDirecton', anonymous=True)
     try:
         rospy.spin()
 
